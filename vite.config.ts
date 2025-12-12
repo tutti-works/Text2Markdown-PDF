@@ -12,6 +12,8 @@ export default defineConfig(({ mode }) => {
     define: {
       // This bridges the gap between Vercel's API_KEY and the code's process.env.API_KEY
       'process.env.API_KEY': JSON.stringify(env.API_KEY),
+      'process.env.GOOGLE_CLIENT_ID': JSON.stringify(env.GOOGLE_CLIENT_ID),
+      'process.env.ALLOWED_EMAILS': JSON.stringify(env.ALLOWED_EMAILS),
     },
   }
 })

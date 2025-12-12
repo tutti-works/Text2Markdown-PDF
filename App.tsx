@@ -1,5 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from '@google/genai';
+import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
 
 // Icons
 const SparklesIcon = () => (
@@ -51,6 +53,50 @@ export default function App() {
   const [markdownText, setMarkdownText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
+  
+  // Auth state
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
+
+  // Check for persisted session on load (optional but good for UX)
+  useEffect(() => {
+    // Simple session persistence could be added here if needed
+  }, []);
+
+  const handleLoginSuccess = (credentialResponse: any) => {
+    try {
+      if (!credentialResponse.credential) {
+        setLoginError("ログイン情報が取得できませんでした。");
+        return;
+      }
+      
+      const decoded: any = jwtDecode(credentialResponse.credential);
+      const email = decoded.email;
+      
+      const allowedEmailsEnv = process.env.ALLOWED_EMAILS || '';
+      // Split by comma and trim whitespace
+      const allowedList = allowedEmailsEnv.split(',').map(e => e.trim()).filter(e => e);
+      
+      // Check if list is defined. If empty, maybe allow all? Or block all? 
+      // Safe default: Block all if list is empty to prevent accidents.
+      if (allowedList.length === 0) {
+        setLoginError("管理者設定エラー: 許可リストが設定されていません。");
+        return;
+      }
+
+      if (allowedList.includes(email)) {
+        setIsAuthenticated(true);
+        setCurrentUser(email);
+        setLoginError('');
+      } else {
+        setLoginError("このアカウントにはアクセス権限がありません。");
+      }
+    } catch (e) {
+      console.error("Login processing error", e);
+      setLoginError("ログイン処理中にエラーが発生しました。");
+    }
+  };
 
   const handleGenerate = async () => {
     if (!inputText.trim()) return;
@@ -110,8 +156,6 @@ export default function App() {
       window.print();
     } catch (e) {
       console.error("Print failed", e);
-      // In sandbox environments, this might still trigger an error in the console,
-      // but the user is aware and plans to deploy.
       alert("印刷ウィンドウを開けませんでした。"); 
     }
   };
@@ -122,6 +166,39 @@ export default function App() {
     return window.marked ? window.marked.parse(markdownText) : markdownText;
   };
 
+  // --- Login Screen ---
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full text-center border border-slate-200">
+          <div className="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 text-primary">
+            <DocumentIcon />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-800 mb-2">Text2Markdown PDF</h1>
+          <p className="text-slate-500 mb-8">
+            アクセスするには、許可されたGoogleアカウントでログインしてください。
+          </p>
+          
+          <div className="flex justify-center mb-4">
+            <GoogleLogin
+              onSuccess={handleLoginSuccess}
+              onError={() => {
+                setLoginError('ログインに失敗しました。');
+              }}
+            />
+          </div>
+          
+          {loginError && (
+            <div className="mt-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
+              {loginError}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // --- Main App Screen ---
   return (
     <div className="min-h-screen flex flex-col font-sans text-slate-800 bg-slate-50">
       {/* Header - Hidden when printing */}
@@ -135,8 +212,16 @@ export default function App() {
               Text2Markdown PDF
             </h1>
           </div>
-          <div className="text-sm text-slate-500 hidden sm:block">
-            Powered by Gemini 2.5 Flash
+          <div className="flex items-center gap-4 text-sm">
+            <div className="text-slate-500 hidden sm:block">
+              {currentUser} としてログイン中
+            </div>
+            <button 
+              onClick={() => setIsAuthenticated(false)}
+              className="text-slate-500 hover:text-slate-800 underline"
+            >
+              ログアウト
+            </button>
           </div>
         </div>
       </header>
