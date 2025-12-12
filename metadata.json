@@ -1,0 +1,5 @@
+{
+  "name": "Text2Markdown PDF",
+  "description": "A smart text formatter that converts raw text into structured Markdown using Gemini AI and exports it as a clean PDF.",
+  "requestFramePermissions": []
+}

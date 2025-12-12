@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Text2Markdown PDF</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'Noto Sans JP', 'sans-serif'],
+            },
+            colors: {
+              primary: '#2563eb',
+              secondary: '#475569',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Custom scrollbar for cleaner look */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f1f5f9; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1; 
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8; 
+      }
+      body {
+        background-color: #f8fafc;
+      }
+
+      /* Markdown Preview Styles */
+      .markdown-body {
+        color: #334155;
+        line-height: 1.8;
+      }
+      .markdown-body h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e2e8f0;
+      }
+      .markdown-body h2 {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+      }
+      .markdown-body h3 {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #334155;
+        margin-top: 1.25rem;
+        margin-bottom: 0.5rem;
+      }
+      .markdown-body p {
+        margin-bottom: 1rem;
+      }
+      .markdown-body ul {
+        list-style-type: disc;
+        padding-left: 1.5rem;
+        margin-bottom: 1rem;
+      }
+      .markdown-body ol {
+        list-style-type: decimal;
+        padding-left: 1.5rem;
+        margin-bottom: 1rem;
+      }
+      .markdown-body li {
+        margin-bottom: 0.25rem;
+      }
+      .markdown-body strong {
+        font-weight: 700;
+        color: #0f172a;
+      }
+      .markdown-body blockquote {
+        border-left: 4px solid #cbd5e1;
+        padding-left: 1rem;
+        color: #64748b;
+        font-style: italic;
+        margin-bottom: 1rem;
+        background-color: #f8fafc;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+      }
+      .markdown-body hr {
+        border-color: #e2e8f0;
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+      }
+      .markdown-body code {
+        background-color: #f1f5f9;
+        padding: 0.2rem 0.4rem;
+        border-radius: 0.25rem;
+        font-family: monospace;
+        font-size: 0.9em;
+        color: #be185d;
+      }
+      .markdown-body pre {
+        background-color: #1e293b;
+        color: #f8fafc;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        overflow-x: auto;
+        margin-bottom: 1rem;
+      }
+      .markdown-body pre code {
+        background-color: transparent;
+        color: inherit;
+        padding: 0;
+      }
+
+      /* Table Styles - Fixed white text issue */
+      .markdown-body table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+      .markdown-body th, .markdown-body td {
+        border: 1px solid #cbd5e1;
+        padding: 0.75rem;
+        color: #1e293b; /* Explicitly dark text */
+      }
+      .markdown-body th {
+        background-color: #f1f5f9;
+        font-weight: 600;
+        text-align: left;
+      }
+      
+      /* A4 page simulation for preview */
+      .a4-page {
+        width: 100%;
+        min-height: 297mm;
+        background: white;
+        padding: 20mm;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+      @media (max-width: 768px) {
+        .a4-page {
+          padding: 15px;
+          min-height: auto;
+        }
+      }
+
+      /* Print Styles for PDF Export */
+      @media print {
+        @page {
+          size: A4;
+          margin: 20mm;
+        }
+        body {
+          background-color: white !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        
+        /* Hide everything by default for print */
+        /* Note: We will use tailwind 'print:hidden' classes in React mostly, but this is a safety net */
+        .a4-page {
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          box-shadow: none !important;
+          min-height: auto !important;
+        }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.33.0"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
