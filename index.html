@@ -129,17 +129,25 @@
         padding: 0;
       }
 
-      /* Table Styles - Fixed white text issue */
+      /* Table Styles - Fixed Overflow & Formatting */
       .markdown-body table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 1.5rem;
         margin-bottom: 1.5rem;
+        /* Critical: Force table to respect container width */
+        table-layout: fixed;
       }
       .markdown-body th, .markdown-body td {
         border: 1px solid #cbd5e1;
-        padding: 0.75rem;
-        color: #1e293b; /* Explicitly dark text */
+        padding: 0.5rem;
+        color: #1e293b;
+        /* Critical: Force text to wrap */
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+        word-break: break-word;
+        font-size: 0.875rem; /* Smaller font for tables to fit more content */
+        vertical-align: top;
       }
       .markdown-body th {
         background-color: #f1f5f9;
@@ -188,12 +196,12 @@
   <script type="importmap">
 {
   "imports": {
-    "vite": "https://esm.sh/vite@^7.2.7",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
-    "@google/genai": "https://esm.sh/@google/genai@^1.33.0",
-    "react/": "https://esm.sh/react@^19.2.3/",
     "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.33.0",
+    "vite": "https://esm.sh/vite@^7.2.7",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
   }
 }
 </script>
